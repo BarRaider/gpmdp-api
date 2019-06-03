@@ -6,24 +6,24 @@ namespace GPMDP_Api.Volume
 {
     public static class Volume
     {
-        public static int GetVolume()
+        public static void GetVolume(this Client c)
         {
-            throw new NotImplementedException();
+            c.SendCommand("volume", "getVolume");
         }
 
-        public static void SetVolume(int value)
+        public static void SetVolume(this Client c, int value)
         {
-            throw new NotImplementedException();
+            c.SendCommand("volume", "setVolume", value);
         }
 
-        public static int IncreaseVolume(int amount = 5)
+        public static void IncreaseVolume(this Client c, int amount = 5)
         {
-            throw new NotImplementedException();
+            c.SendCommand("volume", "increaseVolume", amount);
         }
 
-        public static int DecreaseVolume(int amount = 5)
+        public static void DecreaseVolume(this Client c, int amount = 5)
         {
-            throw new NotImplementedException();
+            c.SendCommand("volume", "decreaseVolume", amount);
         }
     }
 }

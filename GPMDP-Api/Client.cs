@@ -5,27 +5,36 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
-using WebSocketSharp;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using WebSocketSharp;
 
 namespace GPMDP_Api
 {
     public partial class Client
     {
+        public static readonly string RESPONSE_CODE_REQUIRED = "CODE_REQUIRED";
         private WebSocket _ws;
         public string Uri { get; set; }
         public int Port { get; set; }
         public string AppName { get; set; }
-        
+
+        public bool IsConnected
+        {
+            get
+            {
+                return _ws != null && _ws.IsAlive;
+            }
+        }
+
         /// <summary>
         /// Initialize the client with connection information
         /// </summary>
         /// <param name="appName">Can be anything, app or device name</param>
         /// <param name="uri">The IP address of the client you want to connect to</param>
         /// <param name="port">THe port GPDMP is running on</param>
-        public Client(string appName = "gpmdp-api", string uri = "localhost", int port = 5672)
+        public Client(string appName, string uri = "localhost", int port = 5672)
         {
             Uri = uri;
             Port = port;
@@ -46,6 +55,7 @@ namespace GPMDP_Api
             _ws = new WebSocket($"ws://{Uri}:{Port}");
             _ws.OnMessage += _ws_OnMessage;
             _ws.OnError += _ws_OnError;
+            _ws.OnOpen += _ws_OnOpen;
 
             _ws.Connect();
         }
@@ -117,8 +127,14 @@ namespace GPMDP_Api
 
         private void _ws_OnError(object sender, WebSocketSharp.ErrorEventArgs e)
         {
-            throw new NotImplementedException();
+            OnSocketError?.Invoke(this, new SocketErrorException(e.Exception, e.Message));
         }
+
+        private void _ws_OnOpen(object sender, EventArgs e)
+        {
+            OnSocketConnected?.Invoke(this, e);
+        }
+
 
         private void _ws_OnMessage(object sender, MessageEventArgs e)
         {
@@ -139,8 +155,8 @@ namespace GPMDP_Api
 
             if (m is Connect c)
             {
-                if (c.Payload == "CODE_REQUIRED")
-                    ConnectReceived.Invoke(this, null);
+                if (c.Payload == RESPONSE_CODE_REQUIRED)
+                    ConnectReceived.Invoke(this, RESPONSE_CODE_REQUIRED);
                 else if (Guid.TryParse(c.Payload, out Guid g))
                     ConnectReceived.Invoke(this, c.Payload);
                 return;
@@ -157,7 +173,7 @@ namespace GPMDP_Api
             }
             else
             {
-                //Console.WriteLine(e.Data);
+                OnError?.Invoke(this, $"Invalid Message Received: {e.Data}");
             }
         }
 
@@ -178,6 +194,9 @@ namespace GPMDP_Api
         public event EventHandler<string> ConnectReceived;
         public event EventHandler<Message> MessageReceived;
         internal event EventHandler<Result> ResultReceived;
+        public event EventHandler<SocketErrorException> OnSocketError;
+        public event EventHandler<string> OnError;
+        public event EventHandler<EventArgs> OnSocketConnected;
 
         private void Client_ResultReceived(object sender, Result e)
         {

@@ -18,7 +18,6 @@ namespace GPMDP_Api.Playback
             c.SendCommand("playback", "playPause");
         }
 
-
         /// <summary>
         /// Get the current time in the track playing
         /// </summary>
