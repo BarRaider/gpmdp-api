@@ -108,9 +108,9 @@ namespace GPMDP_Api.Playback
             throw new NotImplementedException();
         }
 
-        public static ShuffleType GetShuffle()
+        public static ShuffleType GetShuffle(this Client c)
         {
-            throw new NotImplementedException();
+            return (ShuffleType)Enum.Parse(typeof(ShuffleType), c.GetCommand("playback", "getShuffle").Result);
         }
 
         public static void SetShuffle(ShuffleType type)
@@ -118,14 +118,14 @@ namespace GPMDP_Api.Playback
             throw new NotImplementedException();
         }
 
-        public static ShuffleType ToggleShuffle()
+        public static void ToggleShuffle(this Client c)
         {
-            throw new NotImplementedException();
+            c.SendCommand("playback", "toggleShuffle");
         }
 
-        public static RepeatType GetRepeat()
+        public static RepeatType GetRepeat(this Client c)
         {
-            throw new NotImplementedException();
+            return (RepeatType)Enum.Parse(typeof(RepeatType), c.GetCommand("playback", "getRepeat").Result);
         }
 
         public static void SetRepeat(RepeatType type)
@@ -133,9 +133,9 @@ namespace GPMDP_Api.Playback
             throw new NotImplementedException();
         }
 
-        public static RepeatType ToggleRepeat()
+        public static void ToggleRepeat(this Client c)
         {
-            throw new NotImplementedException();
+            c.SendCommand("playback", "toggleRepeat");
         }
         
         public static bool IsPodcast()

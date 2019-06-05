@@ -120,9 +120,7 @@ namespace GPMDP_Api
             if (type != "error")
                 return r.ToString();
             else
-                throw new Exception(r.ToString());
-
-            
+                throw new Exception(r.ToString());   
         }
 
         private void _ws_OnError(object sender, WebSocketSharp.ErrorEventArgs e)
