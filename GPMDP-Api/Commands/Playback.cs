@@ -113,9 +113,9 @@ namespace GPMDP_Api.Playback
             return (ShuffleType)Enum.Parse(typeof(ShuffleType), c.GetCommand("playback", "getShuffle").Result);
         }
 
-        public static void SetShuffle(ShuffleType type)
+        public static void SetShuffle(this Client c, ShuffleType type)
         {
-            throw new NotImplementedException();
+            c.SendCommand("playback", "setShuffle", type == ShuffleType.All ? "ALL_SHUFFLE" : "NO_SHUFFLE");
         }
 
         public static void ToggleShuffle(this Client c)
@@ -128,9 +128,18 @@ namespace GPMDP_Api.Playback
             return (RepeatType)Enum.Parse(typeof(RepeatType), c.GetCommand("playback", "getRepeat").Result);
         }
 
-        public static void SetRepeat(RepeatType type)
+        public static void SetRepeat(this Client c, RepeatType type)
         {
-            throw new NotImplementedException();
+            string repeatType = "NO_REPEAT";
+            if (type == RepeatType.List)
+            {
+                repeatType = "LIST_REPEAT";
+            }
+            else if (type == RepeatType.Single)
+            {
+                repeatType = "SINGLE_REPEAT";
+            }
+            c.SendCommand("playback", "setRepeat", repeatType);
         }
 
         public static void ToggleRepeat(this Client c)
