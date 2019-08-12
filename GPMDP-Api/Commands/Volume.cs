@@ -6,9 +6,16 @@ namespace GPMDP_Api.Volume
 {
     public static class Volume
     {
-        public static void GetVolume(this Client c)
+        public static int GetVolume(this Client c)
         {
-            c.SendCommand("volume", "getVolume");
+            string result = c.GetCommand("volume", "getVolume").Result;
+            if (Int32.TryParse(result, out int volume))
+            {
+                return volume;
+            }
+            c.RaiseError($"Invalid GetVolume received: {result}");
+            
+            return 0;
         }
 
         public static void SetVolume(this Client c, int value)

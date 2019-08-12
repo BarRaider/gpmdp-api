@@ -95,7 +95,7 @@ namespace GPMDP_Api
         /// <param name="ns"></param>
         /// <param name="method"></param>
         /// <returns></returns>
-        public async Task<string> GetCommand(string ns, string method)
+        public async Task<string> GetCommand(string ns, string method, params object[] args)
         {
             reqId++;
             var thisReq = reqId;
@@ -103,7 +103,8 @@ namespace GPMDP_Api
             {
                 Namespace = ns,
                 Method = method,
-                RequestId = thisReq
+                RequestId = thisReq,
+                Arguments = args
             };
             object r = null;
             string type = null;
@@ -121,6 +122,11 @@ namespace GPMDP_Api
                 return r.ToString();
             else
                 throw new Exception(r.ToString());   
+        }
+
+        public void RaiseError(string message)
+        {
+            OnError?.Invoke(this, $"Error Raised: {message}");
         }
 
         private void _ws_OnError(object sender, WebSocketSharp.ErrorEventArgs e)
