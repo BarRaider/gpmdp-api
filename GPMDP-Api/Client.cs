@@ -97,31 +97,39 @@ namespace GPMDP_Api
         /// <returns></returns>
         public async Task<string> GetCommand(string ns, string method, params object[] args)
         {
-            reqId++;
-            var thisReq = reqId;
-            var c = new Command
+            try
             {
-                Namespace = ns,
-                Method = method,
-                RequestId = thisReq,
-                Arguments = args
-            };
-            object r = null;
-            string type = null;
-            _results.Add(thisReq, null);
-            var json = JsonConvert.SerializeObject(c, Formatting.None, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
-            _ws.Send(json);
-            while (_results[thisReq] == null)
-            {
-                await Task.Delay(25);
+                reqId++;
+                var thisReq = reqId;
+                var c = new Command
+                {
+                    Namespace = ns,
+                    Method = method,
+                    RequestId = thisReq,
+                    Arguments = args
+                };
+                object r = null;
+                string type = null;
+                _results.Add(thisReq, null);
+                var json = JsonConvert.SerializeObject(c, Formatting.None, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
+                _ws.Send(json);
+                while (_results[thisReq] == null)
+                {
+                    await Task.Delay(25);
+                }
+                type = _results[thisReq].Type;
+                r = _results[thisReq].Value;
+                _results.Remove(thisReq);
+                if (type != "error")
+                    return r.ToString();
+                else
+                    throw new Exception(r.ToString());
             }
-            type = _results[thisReq].Type;
-            r = _results[thisReq].Value;
-            _results.Remove(thisReq);
-            if (type != "error")
-                return r.ToString();
-            else
-                throw new Exception(r.ToString());   
+            catch (Exception ex)
+            {
+                RaiseError($"GetCommand Exception: {ex}");
+            }
+            return null;
         }
 
         public void RaiseError(string message)
