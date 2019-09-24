@@ -8,13 +8,19 @@ namespace GPMDP_Api.Volume
     {
         public static int GetVolume(this Client c)
         {
-            string result = c.GetCommand("volume", "getVolume").Result;
-            if (Int32.TryParse(result, out int volume))
+            try
             {
-                return volume;
+                string result = c.GetCommand("volume", "getVolume").Result;
+                if (Int32.TryParse(result, out int volume))
+                {
+                    return volume;
+                }
+                c.RaiseError($"Invalid GetVolume received: {result}");
             }
-            c.RaiseError($"Invalid GetVolume received: {result}");
-            
+            catch (Exception ex)
+            {
+                c.RaiseError($"GetVolume Exception: {ex}");
+            }
             return 0;
         }
 
