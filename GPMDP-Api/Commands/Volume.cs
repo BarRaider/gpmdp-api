@@ -11,6 +11,10 @@ namespace GPMDP_Api.Volume
             try
             {
                 string result = c.GetCommand("volume", "getVolume").Result;
+                if (String.IsNullOrEmpty(result))
+                {
+                    return -1;
+                }
                 if (Int32.TryParse(result, out int volume))
                 {
                     return volume;

@@ -15,6 +15,7 @@ namespace GPMDP_Api
     public partial class Client
     {
         public static readonly string RESPONSE_CODE_REQUIRED = "CODE_REQUIRED";
+        private readonly SemaphoreSlim actionLock = new SemaphoreSlim(1, 1);
         private WebSocket _ws;
         public string Uri { get; set; }
         public int Port { get; set; }
@@ -97,10 +98,15 @@ namespace GPMDP_Api
         /// <returns></returns>
         public async Task<string> GetCommand(string ns, string method, params object[] args)
         {
+            await actionLock.WaitAsync();
             try
             {
                 reqId++;
                 var thisReq = reqId;
+                if (args.Length == 0)
+                {
+                    args = null;
+                }
                 var c = new Command
                 {
                     Namespace = ns,
@@ -110,7 +116,10 @@ namespace GPMDP_Api
                 };
                 object r = null;
                 string type = null;
-                _results.Add(thisReq, null);
+                if (!_results.ContainsKey(thisReq))
+                {
+                    _results.Add(thisReq, null);
+                }
                 var json = JsonConvert.SerializeObject(c, Formatting.None, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
                 _ws.Send(json);
                 while (_results[thisReq] == null)
@@ -128,6 +137,10 @@ namespace GPMDP_Api
             catch (Exception ex)
             {
                 RaiseError($"GetCommand Exception: {ex}");
+            }
+            finally
+            {
+                actionLock.Release();
             }
             return null;
         }
